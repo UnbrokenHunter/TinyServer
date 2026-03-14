@@ -1,0 +1,6 @@
+name: Tinyserver
+version: '${version}'
+main: io.github.unbrokenhunter.tinyserver.Tinyserver
+api-version: 1.21
+authors: [ Hunter ]
+description: tinyserver
