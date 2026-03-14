@@ -9,7 +9,9 @@ import java.util.UUID;
 
 public class TimeManager {
     private final Map<UUID, Integer> usedSeconds = new HashMap<>();
+    private final Map<UUID, Integer> customLimits = new HashMap<>();
     private final JavaPlugin plugin;
+
 
     public TimeManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -40,6 +42,22 @@ public class TimeManager {
         usedSeconds.clear();
     }
 
+    public void setPlayerLimit(UUID uuid, int seconds) {
+        customLimits.put(uuid, seconds);
+    }
+
+    public void clearPlayerLimit(UUID uuid) {
+        customLimits.remove(uuid);
+    }
+
+    public boolean hasPlayerLimit(UUID uuid) {
+        return customLimits.containsKey(uuid);
+    }
+
+    public int getLimitForPlayer(UUID uuid) {
+        return customLimits.getOrDefault(uuid, getDailyLimitSeconds());
+    }
+
     public int getDailyLimitSeconds() {
         return plugin.getConfig().getInt("daily-limit-seconds", 900);
     }
@@ -50,6 +68,6 @@ public class TimeManager {
     }
 
     public int getRemainingSeconds(UUID uuid) {
-        return Math.max(0, getDailyLimitSeconds() - getUsedSeconds(uuid));
+        return Math.max(0, getLimitForPlayer(uuid) - getUsedSeconds(uuid));
     }
 }

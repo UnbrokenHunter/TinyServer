@@ -63,14 +63,25 @@ public class TimeLimitTabCompleter implements TabCompleter {
             }
         }
 
-        if (args.length == 3 && args[0].equalsIgnoreCase("add")) {
+        if (args.length == 3) {
             if (!sender.hasPermission("tinyserver.timelimit.admin")) {
                 return completions;
             }
 
-            List<String> commonValues = List.of("30", "60", "120", "300");
-            StringUtil.copyPartialMatches(args[2], commonValues, completions);
-            return completions;
+            if (args[0].equalsIgnoreCase("add")) {
+                List<String> commonValues = List.of("30", "60", "120", "300");
+                StringUtil.copyPartialMatches(args[2], commonValues, completions);
+                return completions;
+            }
+
+            if (args[0].equalsIgnoreCase("setlimit")) {
+                List<String> playerNames = new ArrayList<>();
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    playerNames.add(player.getName());
+                }
+                StringUtil.copyPartialMatches(args[2], playerNames, completions);
+                return completions;
+            }
         }
 
         return completions;

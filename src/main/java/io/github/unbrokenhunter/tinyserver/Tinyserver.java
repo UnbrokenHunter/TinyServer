@@ -33,15 +33,14 @@ public final class Tinyserver extends JavaPlugin {
         }
 
         Bukkit.getScheduler().runTaskTimer(this, () -> {
-            int dailyLimitSeconds = timeManager.getDailyLimitSeconds();
-
             for (Player player : Bukkit.getOnlinePlayers()) {
                 UUID uuid = player.getUniqueId();
+                int playerLimit = timeManager.getLimitForPlayer(uuid);
 
                 timeManager.addUsedSeconds(uuid, 1);
                 tabDisplayManager.updatePlayerTabName(player);
 
-                if (timeManager.getUsedSeconds(uuid) >= dailyLimitSeconds) {
+                if (timeManager.getUsedSeconds(uuid) >= playerLimit) {
                     Component component = text()
                             .content("You have used your time for today.")
                             .color(color(0x13f832))

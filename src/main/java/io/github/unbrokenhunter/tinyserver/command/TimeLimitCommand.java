@@ -68,6 +68,7 @@ public class TimeLimitCommand implements CommandExecutor {
                 UUID uuid = target.getUniqueId();
 
                 int used = timeManager.getUsedSeconds(uuid);
+                int limit = timeManager.getLimitForPlayer(uuid);
                 int remaining = timeManager.getRemainingSeconds(uuid);
 
                 String targetName = target.getName() != null ? target.getName() : args[1];
@@ -77,9 +78,11 @@ public class TimeLimitCommand implements CommandExecutor {
                         text(targetName, AQUA)
                                 .append(text(" has used ", GRAY))
                                 .append(text(used + " seconds", GREEN))
-                                .append(text(" today and has ", GRAY))
+                                .append(text(", has ", GRAY))
                                 .append(text(remaining + " seconds", GREEN))
-                                .append(text(" remaining.", GRAY))
+                                .append(text(" remaining, and their limit is ", GRAY))
+                                .append(text(limit + " seconds", GREEN))
+                                .append(text(".", GRAY))
                 );
             }
 
@@ -146,7 +149,7 @@ public class TimeLimitCommand implements CommandExecutor {
                 }
 
                 if (args.length < 2) {
-                    sendPrefixedMessage(sender, text("Usage: /timelimit setlimit <seconds>", YELLOW));
+                    sendPrefixedMessage(sender, text("Usage: /timelimit setlimit <seconds> [player]", YELLOW));
                     return true;
                 }
 
@@ -158,14 +161,32 @@ public class TimeLimitCommand implements CommandExecutor {
                         return true;
                     }
 
-                    timeManager.setDailyLimitSeconds(newLimit);
+                    if (args.length == 2) {
+                        timeManager.setDailyLimitSeconds(newLimit);
+
+                        sendPrefixedMessage(
+                                sender,
+                                text("Global daily limit set to ", GRAY)
+                                        .append(text(newLimit + " seconds", GREEN))
+                                        .append(text(".", GRAY))
+                        );
+                        return true;
+                    }
+
+                    OfflinePlayer target = Bukkit.getOfflinePlayer(args[2]);
+                    String targetName = target.getName() != null ? target.getName() : args[2];
+
+                    timeManager.setPlayerLimit(target.getUniqueId(), newLimit);
 
                     sendPrefixedMessage(
                             sender,
-                            text("Global daily limit set to ", GRAY)
+                            text("Set ", GRAY)
+                                    .append(text(targetName, AQUA))
+                                    .append(text("'s personal limit to ", GRAY))
                                     .append(text(newLimit + " seconds", GREEN))
                                     .append(text(".", GRAY))
                     );
+
                 } catch (NumberFormatException e) {
                     sendPrefixedMessage(sender, text("Seconds must be a number.", RED));
                 }
