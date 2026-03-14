@@ -1,6 +1,15 @@
 name: Tinyserver
-version: '${version}'
+version: ${version}
 main: io.github.unbrokenhunter.tinyserver.Tinyserver
-api-version: 1.21
-authors: [ Hunter ]
-description: tinyserver
+api-version: '1.21.11'
+
+commands:
+  timelimit:
+    description: Manage player playtime limits
+    usage: /timelimit <check|reset|add|setlimit|globalreset> ...
+    permission: tinyserver.timelimit
+
+permissions:
+  tinyserver.timelimit:
+    description: Allows use of time limit admin commands
+    default: op
