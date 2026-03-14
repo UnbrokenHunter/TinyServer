@@ -3,6 +3,7 @@ package io.github.unbrokenhunter.tinyserver;
 import io.github.unbrokenhunter.tinyserver.command.TimeLimitCommand;
 import io.github.unbrokenhunter.tinyserver.command.TimeLimitTabCompleter;
 import io.github.unbrokenhunter.tinyserver.manager.TimeManager;
+import io.github.unbrokenhunter.tinyserver.ui.TabDisplayManager;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -16,6 +17,7 @@ import static net.kyori.adventure.text.format.TextColor.color;
 public final class Tinyserver extends JavaPlugin {
 
     private TimeManager timeManager;
+    private TabDisplayManager tabDisplayManager;
 
     @Override
     public void onEnable() {
@@ -23,6 +25,7 @@ public final class Tinyserver extends JavaPlugin {
         getLogger().info("Tinyserver enabled!");
 
         timeManager = new TimeManager(this);
+        tabDisplayManager = new TabDisplayManager(timeManager);
 
         if (getCommand("timelimit") != null) {
             getCommand("timelimit").setExecutor(new TimeLimitCommand(timeManager));
@@ -36,6 +39,7 @@ public final class Tinyserver extends JavaPlugin {
                 UUID uuid = player.getUniqueId();
 
                 timeManager.addUsedSeconds(uuid, 1);
+                tabDisplayManager.updatePlayerTabName(player);
 
                 if (timeManager.getUsedSeconds(uuid) >= dailyLimitSeconds) {
                     Component component = text()
@@ -50,6 +54,10 @@ public final class Tinyserver extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.playerListName(Component.text(player.getName()));
+        }
+
         getLogger().info("Tinyserver disabled");
     }
 }
