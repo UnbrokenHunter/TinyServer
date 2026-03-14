@@ -33,11 +33,6 @@ public class TimeLimitCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission("tinyserver.timelimit")) {
-            sendPrefixedMessage(sender, text("You do not have permission to use this command.", RED));
-            return true;
-        }
-
         if (args.length == 0) {
             sendPrefixedMessage(
                     sender,
@@ -59,6 +54,11 @@ public class TimeLimitCommand implements CommandExecutor {
 
         switch (subcommand) {
             case "check" -> {
+                if (!sender.hasPermission("tinyserver.timelimit.check")) {
+                    sendPrefixedMessage(sender, text("You do not have permission to use this command.", RED));
+                    return true;
+                }
+
                 if (args.length < 2) {
                     sendPrefixedMessage(sender, text("Usage: /timelimit check <player>", YELLOW));
                     return true;
@@ -84,6 +84,11 @@ public class TimeLimitCommand implements CommandExecutor {
             }
 
             case "reset" -> {
+                if (!sender.hasPermission("tinyserver.timelimit.admin")) {
+                    sendPrefixedMessage(sender, text("You do not have permission to use this command.", RED));
+                    return true;
+                }
+
                 if (args.length < 2) {
                     sendPrefixedMessage(sender, text("Usage: /timelimit reset <player>", YELLOW));
                     return true;
@@ -103,6 +108,11 @@ public class TimeLimitCommand implements CommandExecutor {
             }
 
             case "add" -> {
+                if (!sender.hasPermission("tinyserver.timelimit.admin")) {
+                    sendPrefixedMessage(sender, text("You do not have permission to use this command.", RED));
+                    return true;
+                }
+
                 if (args.length < 3) {
                     sendPrefixedMessage(sender, text("Usage: /timelimit add <player> <seconds>", YELLOW));
                     return true;
@@ -130,6 +140,11 @@ public class TimeLimitCommand implements CommandExecutor {
             }
 
             case "setlimit" -> {
+                if (!sender.hasPermission("tinyserver.timelimit.admin")) {
+                    sendPrefixedMessage(sender, text("You do not have permission to use this command.", RED));
+                    return true;
+                }
+
                 if (args.length < 2) {
                     sendPrefixedMessage(sender, text("Usage: /timelimit setlimit <seconds>", YELLOW));
                     return true;
@@ -157,8 +172,12 @@ public class TimeLimitCommand implements CommandExecutor {
             }
 
             case "globalreset" -> {
-                timeManager.resetAll();
+                if (!sender.hasPermission("tinyserver.timelimit.admin")) {
+                    sendPrefixedMessage(sender, text("You do not have permission to use this command.", RED));
+                    return true;
+                }
 
+                timeManager.resetAll();
                 sendPrefixedMessage(sender, text("Reset all tracked player times.", GREEN));
             }
 

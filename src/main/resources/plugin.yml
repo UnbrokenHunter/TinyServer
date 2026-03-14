@@ -7,9 +7,3 @@ commands:
   timelimit:
     description: Manage player playtime limits
     usage: /timelimit <check|reset|add|setlimit|globalreset> ...
-    permission: tinyserver.timelimit
-
-permissions:
-  tinyserver.timelimit:
-    description: Allows use of time limit admin commands
-    default: op

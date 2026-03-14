@@ -16,18 +16,36 @@ public class TimeLimitTabCompleter implements TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> completions = new ArrayList<>();
 
-        if (!sender.hasPermission("tinyserver.timelimit")) {
-            return completions;
-        }
-
         if (args.length == 1) {
-            List<String> subcommands = List.of("check", "reset", "add", "setlimit", "globalreset");
+            List<String> subcommands = new ArrayList<>();
+
+            if (sender.hasPermission("tinyserver.timelimit.check")) {
+                subcommands.add("check");
+            }
+
+            if (sender.hasPermission("tinyserver.timelimit.admin")) {
+                subcommands.add("reset");
+                subcommands.add("add");
+                subcommands.add("setlimit");
+                subcommands.add("globalreset");
+            }
+
             StringUtil.copyPartialMatches(args[0], subcommands, completions);
             return completions;
         }
 
         if (args.length == 2) {
             String subcommand = args[0].toLowerCase();
+
+            if (subcommand.equals("check")) {
+                if (!sender.hasPermission("tinyserver.timelimit.check")) {
+                    return completions;
+                }
+            } else {
+                if (!sender.hasPermission("tinyserver.timelimit.admin")) {
+                    return completions;
+                }
+            }
 
             if (subcommand.equals("check") || subcommand.equals("reset") || subcommand.equals("add")) {
                 List<String> playerNames = new ArrayList<>();
@@ -46,6 +64,10 @@ public class TimeLimitTabCompleter implements TabCompleter {
         }
 
         if (args.length == 3 && args[0].equalsIgnoreCase("add")) {
+            if (!sender.hasPermission("tinyserver.timelimit.admin")) {
+                return completions;
+            }
+
             List<String> commonValues = List.of("30", "60", "120", "300");
             StringUtil.copyPartialMatches(args[2], commonValues, completions);
             return completions;
