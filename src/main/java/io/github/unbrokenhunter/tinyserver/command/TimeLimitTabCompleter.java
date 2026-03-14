@@ -27,6 +27,7 @@ public class TimeLimitTabCompleter implements TabCompleter {
                 subcommands.add("reset");
                 subcommands.add("add");
                 subcommands.add("setlimit");
+                subcommands.add("clearlimit");
                 subcommands.add("globalreset");
             }
 
@@ -47,8 +48,7 @@ public class TimeLimitTabCompleter implements TabCompleter {
                 }
             }
 
-            if (subcommand.equals("check") || subcommand.equals("reset") || subcommand.equals("add")) {
-                List<String> playerNames = new ArrayList<>();
+            if (subcommand.equals("check") || subcommand.equals("reset") || subcommand.equals("add") || subcommand.equals("clearlimit")) {                List<String> playerNames = new ArrayList<>();
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     playerNames.add(player.getName());
                 }

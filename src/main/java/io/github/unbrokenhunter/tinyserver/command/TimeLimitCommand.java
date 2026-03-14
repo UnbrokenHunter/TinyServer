@@ -43,9 +43,11 @@ public class TimeLimitCommand implements CommandExecutor {
                             .append(text(" | ", DARK_GRAY))
                             .append(text("/timelimit add <player> <seconds>", GOLD))
                             .append(text(" | ", DARK_GRAY))
-                            .append(text("/timelimit setlimit <seconds>", GOLD))
+                            .append(text("/timelimit setlimit <seconds> [player]", GOLD))
                             .append(text(" | ", DARK_GRAY))
                             .append(text("/timelimit globalreset", GOLD))
+                            .append(text(" | ", DARK_GRAY))
+                            .append(text("/timelimit clearlimit <player>", GOLD))
             );
             return true;
         }
@@ -70,6 +72,7 @@ public class TimeLimitCommand implements CommandExecutor {
                 int used = timeManager.getUsedSeconds(uuid);
                 int limit = timeManager.getLimitForPlayer(uuid);
                 int remaining = timeManager.getRemainingSeconds(uuid);
+                boolean custom = timeManager.hasPlayerLimit(uuid);
 
                 String targetName = target.getName() != null ? target.getName() : args[1];
 
@@ -80,7 +83,9 @@ public class TimeLimitCommand implements CommandExecutor {
                                 .append(text(used + " seconds", GREEN))
                                 .append(text(", has ", GRAY))
                                 .append(text(remaining + " seconds", GREEN))
-                                .append(text(" remaining, and their limit is ", GRAY))
+                                .append(text(" remaining, and is using a ", GRAY))
+                                .append(text(custom ? "personal" : "global", GOLD))
+                                .append(text(" limit of ", GRAY))
                                 .append(text(limit + " seconds", GREEN))
                                 .append(text(".", GRAY))
                 );
@@ -125,7 +130,13 @@ public class TimeLimitCommand implements CommandExecutor {
 
                 try {
                     int amount = Integer.parseInt(args[2]);
-                    timeManager.addUsedSeconds(target.getUniqueId(), amount);
+
+                    if (amount < 0) {
+                        sendPrefixedMessage(sender, text("Seconds must be a positive number.", RED));
+                        return true;
+                    }
+
+                    timeManager.addUsedSeconds(target.getUniqueId(), -amount);
 
                     String targetName = target.getName() != null ? target.getName() : args[1];
 
@@ -186,10 +197,42 @@ public class TimeLimitCommand implements CommandExecutor {
                                     .append(text(newLimit + " seconds", GREEN))
                                     .append(text(".", GRAY))
                     );
-
                 } catch (NumberFormatException e) {
                     sendPrefixedMessage(sender, text("Seconds must be a number.", RED));
                 }
+            }
+
+            case "clearlimit" -> {
+                if (!sender.hasPermission("tinyserver.timelimit.admin")) {
+                    sendPrefixedMessage(sender, text("You do not have permission to use this command.", RED));
+                    return true;
+                }
+
+                if (args.length < 2) {
+                    sendPrefixedMessage(sender, text("Usage: /timelimit clearlimit <player>", YELLOW));
+                    return true;
+                }
+
+                OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
+                String targetName = target.getName() != null ? target.getName() : args[1];
+
+                if (!timeManager.hasPlayerLimit(target.getUniqueId())) {
+                    sendPrefixedMessage(
+                            sender,
+                            text(targetName, AQUA)
+                                    .append(text(" does not have a personal limit set.", GRAY))
+                    );
+                    return true;
+                }
+
+                timeManager.clearPlayerLimit(target.getUniqueId());
+
+                sendPrefixedMessage(
+                        sender,
+                        text("Cleared ", GRAY)
+                                .append(text(targetName, AQUA))
+                                .append(text("'s personal limit. They now use the global limit.", GREEN))
+                );
             }
 
             case "globalreset" -> {
