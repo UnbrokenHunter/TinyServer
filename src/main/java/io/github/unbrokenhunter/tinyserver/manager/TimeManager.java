@@ -10,8 +10,8 @@ import java.util.UUID;
 public class TimeManager {
     private final Map<UUID, Integer> usedSeconds = new HashMap<>();
     private final Map<UUID, Integer> customLimits = new HashMap<>();
+    private final Map<UUID, Integer> bonusSeconds = new HashMap<>();
     private final JavaPlugin plugin;
-
 
     public TimeManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -30,20 +30,19 @@ public class TimeManager {
     }
 
     public void addUsedSeconds(UUID uuid, int amount) {
-        int newValue = getUsedSeconds(uuid) + amount;
-        setUsedSeconds(uuid, newValue);
+        setUsedSeconds(uuid, getUsedSeconds(uuid) + amount);
     }
 
-    public void resetPlayer(UUID uuid) {
-        usedSeconds.put(uuid, 0);
+    public void resetPlayerUsedTime(UUID uuid) {
+        usedSeconds.remove(uuid);
     }
 
-    public void resetAll() {
+    public void resetAllUsedTimes() {
         usedSeconds.clear();
     }
 
     public void setPlayerLimit(UUID uuid, int seconds) {
-        customLimits.put(uuid, seconds);
+        customLimits.put(uuid, Math.max(1, seconds));
     }
 
     public void clearPlayerLimit(UUID uuid) {
@@ -54,20 +53,57 @@ public class TimeManager {
         return customLimits.containsKey(uuid);
     }
 
-    public int getLimitForPlayer(UUID uuid) {
-        return customLimits.getOrDefault(uuid, getDailyLimitSeconds());
-    }
-
     public int getDailyLimitSeconds() {
         return plugin.getConfig().getInt("daily-limit-seconds", 900);
     }
 
     public void setDailyLimitSeconds(int seconds) {
-        plugin.getConfig().set("daily-limit-seconds", seconds);
+        plugin.getConfig().set("daily-limit-seconds", Math.max(1, seconds));
         plugin.saveConfig();
+    }
+
+    public int getBaseLimitForPlayer(UUID uuid) {
+        return customLimits.getOrDefault(uuid, getDailyLimitSeconds());
+    }
+
+    public int getBonusSeconds(UUID uuid) {
+        return bonusSeconds.getOrDefault(uuid, 0);
+    }
+
+    public void addBonusSeconds(UUID uuid, int amount) {
+        int newValue = getBonusSeconds(uuid) + amount;
+
+        if (newValue <= 0) {
+            bonusSeconds.remove(uuid);
+            return;
+        }
+
+        bonusSeconds.put(uuid, newValue);
+    }
+
+    public void clearBonusSeconds(UUID uuid) {
+        bonusSeconds.remove(uuid);
+    }
+
+    public void clearAllBonusSeconds() {
+        bonusSeconds.clear();
+    }
+
+    public int getLimitForPlayer(UUID uuid) {
+        return getBaseLimitForPlayer(uuid) + getBonusSeconds(uuid);
     }
 
     public int getRemainingSeconds(UUID uuid) {
         return Math.max(0, getLimitForPlayer(uuid) - getUsedSeconds(uuid));
+    }
+
+    public void resetPlayerDailyState(UUID uuid) {
+        resetPlayerUsedTime(uuid);
+        clearBonusSeconds(uuid);
+    }
+
+    public void resetAllDailyStates() {
+        resetAllUsedTimes();
+        clearAllBonusSeconds();
     }
 }

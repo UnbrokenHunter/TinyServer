@@ -70,7 +70,9 @@ public class TimeLimitCommand implements CommandExecutor {
                 UUID uuid = target.getUniqueId();
 
                 int used = timeManager.getUsedSeconds(uuid);
-                int limit = timeManager.getLimitForPlayer(uuid);
+                int baseLimit = timeManager.getBaseLimitForPlayer(uuid);
+                int bonus = timeManager.getBonusSeconds(uuid);
+                int effectiveLimit = timeManager.getLimitForPlayer(uuid);
                 int remaining = timeManager.getRemainingSeconds(uuid);
                 boolean custom = timeManager.hasPlayerLimit(uuid);
 
@@ -80,13 +82,17 @@ public class TimeLimitCommand implements CommandExecutor {
                         sender,
                         text(targetName, AQUA)
                                 .append(text(" has used ", GRAY))
-                                .append(text(used + " seconds", GREEN))
+                                .append(text(used + "s", GREEN))
                                 .append(text(", has ", GRAY))
-                                .append(text(remaining + " seconds", GREEN))
-                                .append(text(" remaining, and is using a ", GRAY))
+                                .append(text(remaining + "s", GREEN))
+                                .append(text(" remaining, base limit: ", GRAY))
+                                .append(text(baseLimit + "s", GREEN))
+                                .append(text(" (", DARK_GRAY))
                                 .append(text(custom ? "personal" : "global", GOLD))
-                                .append(text(" limit of ", GRAY))
-                                .append(text(limit + " seconds", GREEN))
+                                .append(text("), bonus today: ", GRAY))
+                                .append(text(bonus + "s", GREEN))
+                                .append(text(", total today: ", GRAY))
+                                .append(text(effectiveLimit + "s", GREEN))
                                 .append(text(".", GRAY))
                 );
             }
@@ -103,7 +109,8 @@ public class TimeLimitCommand implements CommandExecutor {
                 }
 
                 OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
-                timeManager.resetPlayer(target.getUniqueId());
+                timeManager.resetPlayerUsedTime(target.getUniqueId());
+                timeManager.clearBonusSeconds(target.getUniqueId());
 
                 String targetName = target.getName() != null ? target.getName() : args[1];
 
@@ -131,22 +138,25 @@ public class TimeLimitCommand implements CommandExecutor {
                 try {
                     int amount = Integer.parseInt(args[2]);
 
-                    if (amount < 0) {
+                    if (amount < 1) {
                         sendPrefixedMessage(sender, text("Seconds must be a positive number.", RED));
                         return true;
                     }
 
-                    timeManager.addUsedSeconds(target.getUniqueId(), -amount);
+                    timeManager.addBonusSeconds(target.getUniqueId(), amount);
 
                     String targetName = target.getName() != null ? target.getName() : args[1];
+                    int totalBonus = timeManager.getBonusSeconds(target.getUniqueId());
 
                     sendPrefixedMessage(
                             sender,
                             text("Added ", GRAY)
                                     .append(text(amount + " seconds", GREEN))
-                                    .append(text(" to ", GRAY))
+                                    .append(text(" of bonus time for today to ", GRAY))
                                     .append(text(targetName, AQUA))
-                                    .append(text(".", GRAY))
+                                    .append(text(". They now have ", GRAY))
+                                    .append(text(totalBonus + " bonus seconds", GREEN))
+                                    .append(text(" today.", GRAY))
                     );
                 } catch (NumberFormatException e) {
                     sendPrefixedMessage(sender, text("Seconds must be a number.", RED));
@@ -241,7 +251,8 @@ public class TimeLimitCommand implements CommandExecutor {
                     return true;
                 }
 
-                timeManager.resetAll();
+                timeManager.resetAllUsedTimes();
+                timeManager.clearAllBonusSeconds();
                 sendPrefixedMessage(sender, text("Reset all tracked player times.", GREEN));
             }
 
