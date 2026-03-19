@@ -58,6 +58,11 @@ Includes commands for checking, resetting, and modifying playtime limits.
 
 # Installation
 
+## Download from Hanagar
+Follow this [link](https://hangar.papermc.io/UnbrokenHunter/TinyServer) and download from Hangar. 
+
+## Manual
+
 1. Download the latest release `.jar` file.
 2. Place it inside your server's `plugins/` folder.
 3. Start or restart your server.
