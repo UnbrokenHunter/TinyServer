@@ -2,8 +2,8 @@ name: Publish to Hangar
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
 
 jobs:
   publish:
@@ -25,7 +25,10 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x gradlew
 
+      - name: Show ref
+        run: echo "Triggered by ${{ github.ref }}"
+
       - name: Build and publish
-        run: ./gradlew build publishPluginPublicationToHangar
+        run: ./gradlew build publishPluginPublicationToHangar --stacktrace
         env:
           HANGAR_API_TOKEN: ${{ secrets.HANGAR_API_TOKEN }}
