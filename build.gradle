@@ -61,7 +61,7 @@ hangarPublish {
         register("plugin") {
             version = project.version.toString()
             channel = "Snapshot"
-            id = "your-project-slug" // replace with your real Hangar project slug
+            id = "TinyServer"
             apiKey = System.getenv("HANGAR_API_TOKEN")
 
             platforms {
