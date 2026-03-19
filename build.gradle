@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'io.papermc.hangar-publish-plugin' version '0.1.2'
 }
 
 group = 'io.github.UnbrokenHunter'
@@ -51,4 +52,37 @@ tasks.register('deployToServer', Copy) {
     from(layout.buildDirectory.dir('libs'))
     include('*.jar')
     into 'C:/Users/Hunter/Active/Games/Minecraft/TinyServer/plugins'
+}
+
+import io.papermc.hangarpublishplugin.model.Platforms
+
+hangarPublish {
+    publications {
+        register("plugin") {
+            version = project.version.toString()
+            channel = "Snapshot"
+            id = "your-project-slug" // replace with your real Hangar project slug
+            apiKey = System.getenv("HANGAR_API_TOKEN")
+
+            platforms {
+                register(Platforms.PAPER) {
+                    jar = tasks.jar.archiveFile
+
+                    platformVersions = project.property("paperVersion")
+                            .toString()
+                            .split(",")
+                            .collect { it.trim() }
+
+                    dependencies {
+                        hangar("Maintenance") {
+                            required = false
+                        }
+                        url("Debuggery", "https://github.com/PaperMC/Debuggery") {
+                            required = true
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
